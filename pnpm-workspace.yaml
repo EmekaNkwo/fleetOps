@@ -1,9 +1,10 @@
-packages:
-  - "apps/*"
-  - "packages/*"
-
+# Not a workspace declaration — there are no workspace packages any more.
+# As of pnpm 10 this file is also where pnpm reads its settings from, and the
+# build allowlist has nowhere else to live: the equivalent `pnpm` field in
+# package.json is ignored, and pnpm refuses to run a dependency's install
+# scripts without an explicit opt-in. esbuild needs its native binary built,
+# and Vitest needs esbuild.
 allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
-  msw: false

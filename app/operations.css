@@ -1,0 +1,236 @@
+/*
+ * Control-centre surface tokens.
+ *
+ * The shadcn defaults are tuned for marketing-adjacent product UI: generous
+ * radii, warm neutrals, soft borders. An operations console wants the opposite
+ * — cool neutrals, tight radii, borders you can actually see at a glance — so
+ * the base tokens are re-pointed here rather than fought with per component.
+ */
+
+:root {
+  --radius: 0.375rem;
+
+  --background: oklch(0.985 0.002 250);
+  --foreground: oklch(0.21 0.015 258);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.015 258);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.015 258);
+  --primary: oklch(0.49 0.16 255);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.004 250);
+  --secondary-foreground: oklch(0.28 0.015 258);
+  --muted: oklch(0.955 0.004 250);
+  --muted-foreground: oklch(0.49 0.012 255);
+  --accent: oklch(0.94 0.012 252);
+  --accent-foreground: oklch(0.25 0.02 258);
+  --border: oklch(0.9 0.006 252);
+  --input: oklch(0.9 0.006 252);
+  --ring: oklch(0.6 0.12 255);
+
+  --chart-1: oklch(0.62 0.17 255);
+  --chart-2: oklch(0.7 0.15 162);
+  --chart-3: oklch(0.75 0.16 70);
+  --chart-4: oklch(0.63 0.2 25);
+  --chart-5: oklch(0.6 0.13 300);
+
+  /* Dedicated console surfaces: chrome, rails and the map backdrop. */
+  --surface-chrome: oklch(0.975 0.003 250);
+  --surface-rail: oklch(0.965 0.004 250);
+  --surface-sunken: oklch(0.945 0.005 250);
+  --grid-line: oklch(0.9 0.006 252 / 60%);
+}
+
+.dark {
+  --background: oklch(0.175 0.012 258);
+  --foreground: oklch(0.955 0.004 250);
+  --card: oklch(0.215 0.014 258);
+  --card-foreground: oklch(0.955 0.004 250);
+  --popover: oklch(0.225 0.014 258);
+  --popover-foreground: oklch(0.955 0.004 250);
+  --primary: oklch(0.68 0.15 250);
+  --primary-foreground: oklch(0.17 0.015 258);
+  --secondary: oklch(0.265 0.015 258);
+  --secondary-foreground: oklch(0.955 0.004 250);
+  --muted: oklch(0.26 0.014 258);
+  --muted-foreground: oklch(0.7 0.012 253);
+  --accent: oklch(0.29 0.018 258);
+  --accent-foreground: oklch(0.97 0.004 250);
+  --border: oklch(1 0 0 / 11%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.6 0.12 255);
+
+  --chart-1: oklch(0.7 0.16 253);
+  --chart-2: oklch(0.76 0.15 162);
+  --chart-3: oklch(0.8 0.15 75);
+  --chart-4: oklch(0.68 0.19 25);
+  --chart-5: oklch(0.68 0.14 300);
+
+  --surface-chrome: oklch(0.2 0.013 258);
+  --surface-rail: oklch(0.195 0.013 258);
+  --surface-sunken: oklch(0.155 0.012 258);
+  --grid-line: oklch(1 0 0 / 7%);
+}
+
+@layer components {
+  /* Column and section labels. Dense, quiet, unmistakably a console. */
+  .ops-label {
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  .ops-chrome {
+    background-color: var(--surface-chrome);
+  }
+
+  .ops-rail {
+    background-color: var(--surface-rail);
+  }
+
+  .ops-sunken {
+    background-color: var(--surface-sunken);
+  }
+
+  /* Numeric readouts: tabular so values do not jitter as they tick. */
+  .ops-figure {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .ops-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .ops-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .ops-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  .ops-scroll::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+/* The live pulse is the only purely decorative motion in the app. */
+@keyframes ops-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+.ops-pulse {
+  animation: ops-pulse 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ops-pulse {
+    animation: none;
+  }
+}
+
+/*
+ * Mapbox's own chrome, re-skinned to match the console. Dark mode is a real
+ * dark basemap style rather than a CSS filter over a light one, so there is
+ * nothing to invert here.
+ */
+.mapboxgl-map {
+  background: var(--surface-sunken);
+  font-family: inherit;
+  outline: none;
+}
+
+.mapboxgl-ctrl-attrib {
+  background: color-mix(in oklch, var(--card) 85%, transparent) !important;
+  color: var(--muted-foreground) !important;
+  font-size: 10px !important;
+  padding: 1px 6px !important;
+}
+
+.mapboxgl-ctrl-attrib a {
+  color: var(--muted-foreground) !important;
+}
+
+.mapboxgl-ctrl-group {
+  background: color-mix(in oklch, var(--card) 92%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.mapboxgl-ctrl-group button + button {
+  border-top-color: var(--border);
+}
+
+.mapboxgl-ctrl-group button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+/* The control glyphs ship as black SVGs, so dark mode lightens them. */
+.dark .mapboxgl-ctrl-group button .mapboxgl-ctrl-icon {
+  filter: invert(1);
+}
+
+/*
+ * Print.
+ *
+ * The console is a full-height flex layout that traps its own scrolling, which
+ * means a naive print produces one page of chrome and nothing else. When a
+ * report is open the rest of the shell is removed from the printed document
+ * entirely and the report is allowed to flow, so it paginates like a document
+ * instead of being clipped to the viewport.
+ */
+@media print {
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /*
+   * The report is portalled to `body`, so hiding every other direct child
+   * removes the console without touching the report's own ancestors — which is
+   * what makes the layout escape the shell's `h-dvh` and `overflow-hidden`.
+   */
+  body:has(.ops-print-root) > *:not(.ops-print-root) {
+    display: none !important;
+  }
+
+  .ops-print-root {
+    position: static !important;
+    display: block !important;
+    padding: 0 !important;
+  }
+
+  .ops-report {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .ops-report section {
+    break-inside: avoid;
+  }
+
+  .ops-report li {
+    break-inside: avoid;
+  }
+}
