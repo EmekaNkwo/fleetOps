@@ -192,14 +192,6 @@ export function VehicleCanvasLayer({
         )
       }
 
-      // TEMP-DEBUG
-      ;(window as unknown as { __frame?: unknown }).__frame = {
-        drawn,
-        indexCount: hitIndexRef.current.count,
-        signature,
-        at: performance.now(),
-      }
-
       // Report the drawn count roughly twice a second; the status strip does
       // not need it per frame and this keeps React out of the loop.
       frameCount += 1

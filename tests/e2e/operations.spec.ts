@@ -14,6 +14,20 @@ async function beginShift(page: Page): Promise<void> {
   await expect(page.getByText("LIVE", { exact: true })).toBeVisible()
 }
 
+/**
+ * Waits until the map has actually painted the fleet.
+ *
+ * The overlay only redraws when something could look different, so freezing the
+ * simulation before the first paint leaves its hit index empty — and every
+ * click on the map then lands on nothing.
+ */
+async function waitForFleetOnMap(page: Page): Promise<void> {
+  await expect(page.getByText(/vehicles drawn/)).toContainText(
+    /[1-9]\d* vehicles drawn/,
+    { timeout: 30_000 }
+  )
+}
+
 /** Parses the big number out of a KPI card. */
 async function kpiValue(page: Page, label: string): Promise<number> {
   const card = page
@@ -297,14 +311,45 @@ test("the map zoom control does not clear the selection", async ({ page }) => {
 
 test("clicking empty map still clears the selection", async ({ page }) => {
   await beginShift(page)
+  await waitForFleetOnMap(page)
+  await page.getByRole("button", { name: "Pause simulation" }).click()
   await page.getByRole("listbox", { name: "Fleet" }).getByRole("option").first().click()
   await expect(page.getByRole("region", { name: /details$/ })).toBeVisible()
+  await page.waitForTimeout(1_500)
 
   const box = await page.locator(".mapboxgl-map").boundingBox()
   if (!box) {
     throw new Error("expected the map to be laid out")
   }
-  await page.mouse.click(box.x + 60, box.y + 60)
+
+  const cursor = () =>
+    page.locator(".mapboxgl-canvas").evaluate((el) => getComputedStyle(el).cursor)
+
+  // Somewhere with no vehicle under it, confirmed rather than assumed: the
+  // camera is parked on the selection, so a fixed corner is a coin toss over
+  // whether another vehicle happens to be there. The hover cursor runs the same
+  // hit test the click does, which makes it a reliable oracle for "empty".
+  let target: { x: number; y: number } | null = null
+  for (const [fx, fy] of [
+    [0.3, 0.3],
+    [0.7, 0.3],
+    [0.7, 0.6],
+    [0.45, 0.25],
+  ]) {
+    const x = box.x + box.width * (fx as number)
+    const y = box.y + box.height * (fy as number)
+    await page.mouse.move(x, y)
+    await page.waitForTimeout(80)
+    if ((await cursor()) !== "pointer") {
+      target = { x, y }
+      break
+    }
+  }
+  if (!target) {
+    throw new Error("expected a patch of map with no vehicle on it")
+  }
+
+  await page.mouse.click(target.x, target.y)
 
   await expect(page.getByRole("region", { name: /details$/ })).toBeHidden()
 })
@@ -314,8 +359,10 @@ test("a focused vehicle is drawn where the camera is pointed", async ({
 }) => {
   await beginShift(page)
 
-  // Paused first: at ninety times real time the fleet crosses the hit radius in
-  // about a second, which would make this a race rather than a test.
+  // Paused once the fleet is on screen: at ninety times real time it crosses
+  // the hit radius in about a second, which would make this a race rather than
+  // a test.
+  await waitForFleetOnMap(page)
   await page.getByRole("button", { name: "Pause simulation" }).click()
   await page.getByRole("listbox", { name: "Fleet" }).getByRole("option").first().click()
   await expect(page.getByRole("region", { name: /details$/ })).toBeVisible()
@@ -344,6 +391,7 @@ test("hovering a vehicle offers a pointer rather than the pan cursor", async ({
   page,
 }) => {
   await beginShift(page)
+  await waitForFleetOnMap(page)
   await page.getByRole("button", { name: "Pause simulation" }).click()
   await page.getByRole("listbox", { name: "Fleet" }).getByRole("option").first().click()
   await expect(page.getByRole("region", { name: /details$/ })).toBeVisible()
